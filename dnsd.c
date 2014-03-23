@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #define VERSION "0.0.1"
 
@@ -38,6 +39,11 @@ int main(int argc, char** argv) {
 	LOG("Booting dnsd v%s...\n", VERSION);
 
 	sstate = new_dnsd(argc, argv);
+	if( ! sstate ) {
+		LOG("Failed to allocate memory; cannot continue (errno: %d)\n", ENOMEM);
+		exit(2);
+	}
+
 	init(sstate);
 	run(sstate);
 	free_dnsd(sstate);
