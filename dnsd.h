@@ -21,6 +21,12 @@ typedef struct {
 
   // runtime values
   int socket;
+
+  /**
+   * The number of read errors on the socket.
+   * When we reach a threshold, the socket shall be closed and reopened.
+   */
+  unsigned int nerrors;
 } server_state;
 
 server_state* new_dnsd(int argc, char** argv);

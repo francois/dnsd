@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <fcntl.h>
 
 server_state* new_dnsd(int argc, char** argv) {
 	int i;
@@ -53,7 +54,7 @@ void init(server_state* sstate) {
 		exit(2);
 	}
 
-	LOG2("dnsd ready to accept requests on %s:%d\n", sstate->bind_address, sstate->port);
+	LOG2("DNSD ready to accept requests on %s:%d\n", sstate->bind_address, sstate->port);
 }
 
 void free_dnsd(server_state* sstate) {
@@ -62,6 +63,6 @@ void free_dnsd(server_state* sstate) {
 	LOG("Closing down socket on port %d\n", sstate->port);
 	close(sstate->socket);
 
-	LOG("dnsd on port %d is down\n", sstate->port);
+	LOG("DNSD on port %d is down\n", sstate->port);
 	free(sstate);
 }
