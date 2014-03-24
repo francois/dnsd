@@ -31,7 +31,7 @@ void process_request(server_state* sstate) {
 	// Reset number of errors counter, to indicate we should continue
 	sstate->nerrors = 0;
 
-	LOG2("Received request from %s:%d\n", inet_ntoa(sender.sin_addr), ntohs(sender.sin_port));
+	LOG3("Received %u bytes from %s:%d\n", (unsigned int)received, inet_ntoa(sender.sin_addr), ntohs(sender.sin_port));
 }
 
 void run(server_state* sstate) {
