@@ -9,14 +9,15 @@
 
 #define VERSION "0.0.1"
 
-#define LOG(fmt, var0) fprintf(stderr, (fmt), (var0))
-#define LOG2(fmt, var0, var1) fprintf(stderr, (fmt), (var0), (var1))
-#define DLOG(fmt, var0) fprintf(stderr, (fmt), (var0))
-#define DLOG2(fmt, var0, var1) fprintf(stderr, (fmt), (var0), (var1))
+#define LOG(fmt, var0) fprintf(stderr, ("%s:%d\t" fmt), __FILE__, __LINE__, (var0))
+#define LOG2(fmt, var0, var1) fprintf(stderr, ("%s:%d\t" fmt), __FILE__, __LINE__, (var0), (var1))
+
+#define INET_ATON_SUCCESS 1
 
 typedef struct {
   // configuration values
   int port;
+  char* bind_address;
 
   // runtime values
   int socket;
