@@ -10,6 +10,7 @@
 #define VERSION "0.0.1"
 
 #define LOG(fmt, var0) fprintf(stderr, ("%s:%d\t" fmt), __FILE__, __LINE__, (var0))
+#define LOG1(fmt, var0) fprintf(stderr, ("%s:%d\t" fmt), __FILE__, __LINE__, (var0))
 #define LOG2(fmt, var0, var1) fprintf(stderr, ("%s:%d\t" fmt), __FILE__, __LINE__, (var0), (var1))
 #define LOG3(fmt, var0, var1, var2) fprintf(stderr, ("%s:%d\t" fmt), __FILE__, __LINE__, (var0), (var1), (var2))
 

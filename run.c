@@ -17,9 +17,10 @@ void process_request(server_state* sstate) {
 	LOG("Accepting request on port %d\n", sstate->port);
 
 	ssize_t received;
-	void* buffer[1];
+	char buffer[1540];
 	struct sockaddr_in sender;
 	socklen_t socklen;
+	int i, j;
 
 	received = recvfrom( sstate->socket, buffer, sizeof(buffer), 0 /* flags */, (struct sockaddr*)&sender, &socklen );
 	if( received == -1 ) {
@@ -32,6 +33,28 @@ void process_request(server_state* sstate) {
 	sstate->nerrors = 0;
 
 	LOG3("Received %ld bytes from %s:%d\n", received, inet_ntoa(sender.sin_addr), ntohs(sender.sin_port));
+	for(i = 0; i <= (received >> 3); i++) {
+		int maxj = (received - (i << 3)) > 8 ? 8 : (received - (i << 3));
+
+		printf("%04x\t", i << 3);
+
+		for(j = 0; j < maxj; j++) {
+			printf("%02x ", 0x000000ff & buffer[(i << 3) + j]);
+		}
+
+		if( maxj < 4 ) putc('\t', stdout);
+		if( maxj < 8 ) putc('\t', stdout);
+		putc('\t', stdout);
+		for(j = 0; j < maxj; j++) {
+			char c = buffer[(i << 3) + j];
+			if(! ( c >= 32 && c < 127 ) ) c = '.';
+			printf("%c", c);
+		}
+
+		putc('\n', stdout);
+	}
+
+	fflush(stdout);
 }
 
 void run(server_state* sstate) {
@@ -57,7 +80,9 @@ void run(server_state* sstate) {
 		int ready;
 		ready = select( 1 + (int)sstate->socket, &readable, NULL, &errored, &timeout );
 		if( ready == 0 ) {
+#if DEBUG
 			LOG("Nothing ready on port %d\n", sstate->port);
+#endif
 			continue;
 		}
 
