@@ -16,6 +16,10 @@
 
 #define INET_ATON_SUCCESS 1
 
+// See http://www.faqs.org/rfcs/rfc1035.html
+// Section 2.3.4. Size limits
+#define MAX_PACKET_SIZE 512
+
 typedef struct {
   // configuration values
   int port;

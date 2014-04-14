@@ -17,7 +17,7 @@ void process_request(server_state* sstate) {
 	LOG("Accepting request on port %d\n", sstate->port);
 
 	ssize_t received;
-	char buffer[1540];
+	char buffer[MAX_PACKET_SIZE];
 	struct sockaddr_in sender;
 	socklen_t socklen;
 	int i, j;
