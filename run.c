@@ -55,7 +55,29 @@ void process_request(server_state* sstate) {
 	}
 
 	fflush(stdout);
+
+	/* NOTE: The packet is in network-byte order, of big-endian.
+	 * Intel uses little-endian, so we have to convert.
+	 * This is what the calls to ntohs do here.
+	 *
+	 * @see https://en.wikipedia.org/wiki/Network_byte_order#Endianness_in_networking
+	 */
+	HEADER* header = (HEADER*)buffer;
+	LOG1("id:\t%u\n", ntohs(header->id));
+	LOG1("qr:\t%s\n", header->qr ? "question" : "answer");
+	LOG1("opcode:\t%s\n", opcode_to_string(header->opcode));
+	LOG1("aa:\t%s\n", header->aa ? "true" : "false");
+	LOG1("tc:\t%s\n", header->tc ? "true" : "false");
+	LOG1("rd:\t%s\n", header->rd ? "true" : "false");
+	LOG1("ra:\t%s\n", header->ra ? "true" : "false");
+	LOG1("z:\t%d\n", header->z);
+	LOG1("rcode:\t%s\n", rcode_to_string(header->rcode));
+	LOG1("qdcount:\t%d\n", ntohs(header->qdcount));
+	LOG1("ancount:\t%d\n", ntohs(header->ancount));
+	LOG1("nscount:\t%d\n", ntohs(header->nscount));
+	LOG1("arcount:\t%d\n", ntohs(header->arcount));
 }
+
 
 void run(server_state* sstate) {
 	assert( sstate );
