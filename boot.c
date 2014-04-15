@@ -7,7 +7,7 @@
 
 server_state* new_dnsd(int argc, char** argv) {
 	int i;
-	LOG("Received %d arguments:\n", argc);
+	LOG1("Received %d arguments:\n", argc);
 	for(i = 0; i < argc; i++) {
 		LOG2("\t%i: %s\n", i, argv[i]);
 	}
@@ -30,10 +30,10 @@ void init(server_state* sstate) {
 
 	// read zone file / data to serve
 
-	LOG("Opening socket on port %d\n", sstate->port);
+	LOG1("Opening socket on port %d\n", sstate->port);
 	sstate->socket = socket( PF_INET, SOCK_DGRAM, 0 );
 	if( !sstate->socket ) {
-		LOG("Failed to create socket (errno: %d)\n", errno);
+		LOG1("Failed to create socket (errno: %d)\n", errno);
 		free_dnsd(sstate);
 		exit(2);
 	}
@@ -60,9 +60,9 @@ void init(server_state* sstate) {
 void free_dnsd(server_state* sstate) {
 	assert( sstate );
 
-	LOG("Closing down socket on port %d\n", sstate->port);
+	LOG1("Closing down socket on port %d\n", sstate->port);
 	close(sstate->socket);
 
-	LOG("DNSD on port %d is down\n", sstate->port);
+	LOG1("DNSD on port %d is down\n", sstate->port);
 	free(sstate);
 }

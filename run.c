@@ -103,14 +103,14 @@ void run(server_state* sstate) {
 		ready = select( 1 + (int)sstate->socket, &readable, NULL, &errored, &timeout );
 		if( ready == 0 ) {
 #if DEBUG
-			LOG("Nothing ready on port %d\n", sstate->port);
+			LOG1("Nothing ready on port %d\n", sstate->port);
 #endif
 			continue;
 		}
 
 		if( FD_ISSET( sstate->socket, &errored ) ) {
 			// We have an error on this socket - should we continue?
-			LOG("DNSD on port %d failed\n", sstate->port);
+			LOG1("DNSD on port %d failed\n", sstate->port);
 			free_dnsd( sstate );
 			exit(1);
 		}
