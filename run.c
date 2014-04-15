@@ -1,4 +1,5 @@
 #include "dnsd.h"
+#include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
@@ -11,28 +12,11 @@ initiate_shutdown(int sig) {
 	done = 1;
 }
 
-void process_request(server_state* sstate) {
-	assert( sstate );
-
-	LOG("Accepting request on port %d\n", sstate->port);
-
-	ssize_t received;
-	char buffer[MAX_PACKET_SIZE];
-	struct sockaddr_in sender;
-	socklen_t socklen;
+static void
+log_received_query( ssize_t received, char* buffer, struct sockaddr_in* sender ) {
 	int i, j;
 
-	received = recvfrom( sstate->socket, buffer, sizeof(buffer), 0 /* flags */, (struct sockaddr*)&sender, &socklen );
-	if( received == -1 ) {
-		LOG2("Failed to read from socket %d (errno: %d)\n", sstate->port, errno);
-		sstate->nerrors += 1;
-		return;
-	}
-
-	// Reset number of errors counter, to indicate we should continue
-	sstate->nerrors = 0;
-
-	LOG3("Received %ld bytes from %s:%d\n", received, inet_ntoa(sender.sin_addr), ntohs(sender.sin_port));
+	LOG3("Received %ld bytes from %s:%d\n", received, inet_ntoa(sender->sin_addr), ntohs(sender->sin_port));
 	for(i = 0; i <= (received >> 3); i++) {
 		int maxj = (received - (i << 3)) > 8 ? 8 : (received - (i << 3));
 
@@ -76,6 +60,58 @@ void process_request(server_state* sstate) {
 	LOG1("ancount:\t%d\n", ntohs(header->ancount));
 	LOG1("nscount:\t%d\n", ntohs(header->nscount));
 	LOG1("arcount:\t%d\n", ntohs(header->arcount));
+}
+
+void process_request(server_state* sstate) {
+	assert( sstate );
+
+	LOG1("Accepting request on port %d\n", sstate->port);
+
+	ssize_t received;
+	char buffer[MAX_PACKET_SIZE];
+	struct sockaddr_in sender;
+	socklen_t socklen = sizeof( struct sockaddr_in );
+
+	received = recvfrom( sstate->socket, buffer, sizeof(buffer), 0 /* flags */, (struct sockaddr*)&sender, &socklen );
+	if( received == -1 ) {
+		LOG2("Failed to read from socket %d (errno: %d)\n", sstate->port, errno);
+		sstate->nerrors += 1;
+		return;
+	}
+
+	// Reset number of errors counter, to indicate we should continue
+	sstate->nerrors = 0;
+
+	log_received_query( received, buffer, &sender );
+	HEADER* header = (HEADER*)buffer;
+
+	char outbuf[MAX_PACKET_SIZE];
+	memset(outbuf, 0, MAX_PACKET_SIZE); // initialize all to zero
+	HEADER* out = (HEADER*)outbuf;
+	out->id = header->id;
+	out->qr = 1; // answer
+	out->opcode = QUERY;
+	out->aa = 0;
+	out->tc = 0;
+	out->rd = 0;
+	out->ra = 0;
+	out->z = 0;
+	out->rcode = FORMAT_ERROR;
+	out->qdcount = 0;
+	out->ancount = 0;
+	out->nscount = 0;
+	out->arcount = 0;
+
+	int rval;
+	int len = (((char*)&out->arcount) + 2) - outbuf;
+	rval = sendto( sstate->socket, outbuf, len, 0, (struct sockaddr*)&sender, socklen );
+	if( rval == -1 ) {
+		LOG2("Failed to send response to %s: (errno %d)\n", inet_ntoa(sender.sin_addr), errno);
+	} else if( len == rval ) {
+		LOG2("Sent %d bytes back to %s\n", len, inet_ntoa(sender.sin_addr));
+	} else {
+		LOG3("Expected to send %d bytes to %s; actually sent %d\n", len, inet_ntoa(sender.sin_addr), rval);
+	}
 }
 
 
